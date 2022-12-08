@@ -1,4 +1,4 @@
-FROM docker-release.otlabs.fr/dbi/docker-generic-app/openjdk-17:2022-10-26v1.1.4
+FROM 364028570591.dkr.ecr.eu-central-1.amazonaws.com/ccc/vos:2022-10-26v1.1.4
 
 COPY target/sockets-1.0-SNAPSHOT.jar /opt/app/sock.jar
 COPY target/lib /opt/app/lib
