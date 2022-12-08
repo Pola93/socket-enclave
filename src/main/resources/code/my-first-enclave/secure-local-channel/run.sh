@@ -15,5 +15,7 @@
 
 # Run traffic forwarder in background and start the server
 #python3 /app/traffic_forwarder.py 127.0.0.1 443 3 8001 &
-python3 server.py server 5005 6666 &
-java -cp sock.jar:lib/* com.idemia.keyless.socket.ServerStart
+cd /opt/app
+java -cp sock.jar:lib/* com.idemia.keyless.socket.ServerStart &
+sleep 5
+python3 server.py server 5005 6666

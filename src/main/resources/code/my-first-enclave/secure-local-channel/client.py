@@ -62,10 +62,10 @@ class VsockStream:
         self.sock.send(data.encode())
         print("Data Sent enclave server", data)
         # receiving responce back
-        data = self.sock.recv(1024).decode()  # receive response
-        print('Received from enclave server: ' + data)  # show in terminal
+        resp = self.sock.recv(1024).decode()  # receive response
+        print("Received from enclave server: ", resp)  # show in terminal
         self.sock.close()
-        return data
+        return resp
 
 
 def client_handler(args):

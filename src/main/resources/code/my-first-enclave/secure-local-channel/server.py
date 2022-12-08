@@ -17,6 +17,7 @@ class OrdinaryStream:
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.settimeout(self.conn_timeout)
+            print("Send from python client to java server on port: ", port)
             self.sock.connect(("127.0.0.1", port))
         except ConnectionResetError as e:
             print("Caught error ", str(e.strerror), " ", str(e.errno))
