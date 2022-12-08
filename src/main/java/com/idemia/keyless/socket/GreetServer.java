@@ -15,6 +15,7 @@ public class GreetServer {
 
     public void start(int port) {
         try {
+            log.info("JAVA SERVER Started on port: " + port);
             serverSocket = new ServerSocket(port);
             clientSocket = serverSocket.accept();
             out = new PrintWriter(clientSocket.getOutputStream(), true);
