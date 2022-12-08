@@ -10,6 +10,9 @@ COPY target/classes/code/my-first-enclave/secure-local-channel/run.sh /opt/app/r
 
 RUN chmod +x /opt/app/run.sh
 
+RUN apt-get update -y
+RUN apt-get install -y iproute2
+
 CMD ["/opt/app/run.sh"]
 
 #ENTRYPOINT ["java","-cp","sock.jar:lib/*","com.idemia.keyless.socket.ServerStart"]
