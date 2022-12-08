@@ -12,4 +12,4 @@ RUN chmod +x /opt/app/run.sh
 
 CMD ["/opt/app/run.sh"]
 
-ENTRYPOINT ["java","-cp","sock.jar:lib/*","com.idemia.keyless.socket.ServerStart"]
+#ENTRYPOINT ["java","-cp","sock.jar:lib/*","com.idemia.keyless.socket.ServerStart"]

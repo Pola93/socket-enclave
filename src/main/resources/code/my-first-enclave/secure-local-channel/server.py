@@ -72,6 +72,7 @@ class VsockListener:
 
 
 def server_handler(args):
+    print("Python server_handler")
     server = VsockListener()
     server.bind(args.port)
     print("Started listening to port : ", str(args.port))
