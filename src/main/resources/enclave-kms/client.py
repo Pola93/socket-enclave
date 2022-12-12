@@ -2,9 +2,11 @@
 # // SPDX-License-Identifier: MIT-0
 
 # !/usr/local/bin/env python3
+import boto3
 import argparse
 import socket
 import sys
+import requests
 
 
 class OrdinarySockListener:
@@ -67,12 +69,59 @@ class VsockStream:
         self.sock.close()
         return resp
 
+def get_identity_document():
+    """
+    Get identity document for current EC2 Host
+    """
+    r = requests.get(
+        "http://169.254.169.254/latest/dynamic/instance-identity/document")
+    return r
+
+
+def get_region(identity):
+    """
+    Get account of current instance identity
+    """
+    region = identity.json()["region"]
+    return region
+
+
+def get_account(identity):
+    """
+    Get account of current instance identity
+    """
+    account = identity.json()["accountId"]
+    return account
+
+def set_identity():
+    identity = get_identity_document()
+    region = get_region(identity)
+    account = get_account(identity)
+    return region, account
+
+REGION, ACCOUNT = set_identity()
+
+def encrypt_message(message):
+    kms = boto3.client("kms", region_name=REGION)
+    data_key_pair = kms.generate_data_key_pair_without_plaintext(
+        KeyId='8b739852-ed54-4b0c-bbf2-334c3232611d',
+        KeyPairSpec='RSA_4096'
+    )
+    private_key_blob = data_key_pair.json()["PrivateKeyCiphertextBlob"]
+    public_key = data_key_pair.json()["PublicKey"]
+
+    print("message plain " + message)
+    print("Private Key " + private_key_blob)
+    print("Public Key " + public_key)
+
 
 def client_handler(args):
     server = OrdinarySockListener()
     server.bind(args.serverPort)
     print("Started ordinary listening to port : ", str(args.serverPort))
     (message, ordinary_client) = server.recv_data()
+
+    encrypt_message(message)
 
     # creat socket tream to the Nitro Enclave
     client = VsockStream()
