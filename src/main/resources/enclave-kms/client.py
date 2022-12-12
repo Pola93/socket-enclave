@@ -107,8 +107,8 @@ def encrypt_message(message):
         KeyId='8b739852-ed54-4b0c-bbf2-334c3232611d',
         KeyPairSpec='RSA_4096'
     )
-    private_key_blob = data_key_pair.json()["PrivateKeyCiphertextBlob"]
-    public_key = data_key_pair.json()["PublicKey"]
+    private_key_blob = data_key_pair["PrivateKeyCiphertextBlob"]
+    public_key = data_key_pair["PublicKey"]
 
     print("message plain " + message)
     print("Private Key " + private_key_blob)
