@@ -111,8 +111,8 @@ def encrypt_message(message):
     public_key = data_key_pair["PublicKey"]
 
     print("message plain " + message)
-    print("Private Key " + private_key_blob)
-    print("Public Key " + public_key)
+    print("Private Key " + private_key_blob.hex())
+    print("Public Key " + public_key.hex())
 
 
 def client_handler(args):
