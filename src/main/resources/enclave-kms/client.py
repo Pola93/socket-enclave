@@ -7,6 +7,7 @@ import argparse
 import socket
 import sys
 import requests
+import rsa
 
 
 class OrdinarySockListener:
@@ -108,11 +109,15 @@ def encrypt_message(message):
         KeyPairSpec='RSA_4096'
     )
     private_key_blob = data_key_pair["PrivateKeyCiphertextBlob"]
-    public_key = data_key_pair["PublicKey"]
+    public_key_blob = data_key_pair["PublicKey"]
 
     print("message plain " + message)
     print("Private Key " + private_key_blob.hex())
-    print("Public Key " + public_key.hex())
+    print("Public Key " + public_key_blob.hex())
+
+    public_key = rsa.PublicKey.load_pkcs1(public_key_blob)
+    encrypted_message = rsa.encrypt(message.encode(), public_key)
+    print("Encrypted: " + encrypted_message.hex())
 
 
 def client_handler(args):
