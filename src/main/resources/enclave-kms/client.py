@@ -7,9 +7,11 @@ import argparse
 import socket
 import sys
 import requests
-import rsa
 import base64
-
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.serialization import load_pem_public_key
 
 class OrdinarySockListener:
     # Server
@@ -117,22 +119,28 @@ def encrypt_message(message):
     print("Public Key " + public_key_blob.hex())
     print("Public Key base64 " + base64.b64encode(public_key_blob).decode())
 
-    pem_public_key = "-----BEGIN RSA PUBLIC KEY-----\n" + base64.b64encode(public_key_blob).decode() + "\n-----END RSA PUBLIC KEY-----"
+    # the_blob = bytes.fromhex("30820222300d06092a864886f70d01010105000382020f003082020a0282020100e3940b83c55108362e1b8e5727892278724c14d95561a347d127977a9b6d8abf7e8bfff2feaad28d9edd961f927f1bf069b0f29905a5ab2e8e731fbc3c8159f301439b909233f5be430956ec24bc5a0895a070555b2613e89c9c4659584c2280599fd68266f1d1ddacf7e93fe6080a97f9e3ec5b36514a0a7661f928310bd7e4a014df62151355ea1635fbcc2c60f5c91fe20b426a7603c95827d17530977c4161e8543017cc875b91b47c01f4024d12b7886280eab7f5429318f6cd70211249ea14ee0723d0bc50c527a9629adefcd716383173e40bcebf627c7926d7f9324dcaeadc543ae9ac3cb3f5494b93b0038eb73d12f630bcd98b4d90e1b36ad0f13936ffaf6bb4a889f64c4985940f12659afaf51cb8058054a0949e594385b14a8e4a86fea3f797b5788d7cde950fed682d50742dec5c01eb64f5b54d0c640a487c2eacba26f59f50aae00b53b1092816b20a31b7262c967a858b150f34e6d0c2ba5bbcf2fa567243c81c44e70e1f7f67abe3cee633a2950ca10c6684f44c9ed3ebfd42d3bbde526285a9b9f460f589dce1bfd440fbad59275e25c1858e1a62983d0ae7d466b0b18b2d49c10bbfb9793448222491346488de44f94d5ff7848f99ae629267fae623b6bc5109cd17eb3cd79c41eacc27493cdafc524dc23ae9c128990266d2b05bc33e168d4239e09aec528c5749fa7371b9846cb3d097e901787fbf0203010001")
 
+    pem_public_key = "-----BEGIN PUBLIC KEY-----\n" + base64.b64encode(public_key_blob).decode() + "\n-----END PUBLIC KEY-----"
+    pk = load_pem_public_key(pem_public_key.encode("ascii"), default_backend())
+    encrypted_message = pk.encrypt(message.encode(), padding.OAEP(
+        mgf=padding.MGF1(algorithm=hashes.SHA256()),
+        algorithm=hashes.SHA256(),
+        label=None
+    ))
     print("Public Key pem " + pem_public_key)
 
-    public_key = rsa.PublicKey.load_pkcs1(pem_public_key.encode())
-    encrypted_message = rsa.encrypt(message.encode(), public_key)
     print("Encrypted: " + encrypted_message.hex())
 
 
 def client_handler(args):
+    print("Start")
+    encrypt_message("tescik")
     server = OrdinarySockListener()
     server.bind(args.serverPort)
     print("Started ordinary listening to port : ", str(args.serverPort))
     (message, ordinary_client) = server.recv_data()
 
-    encrypt_message(message)
 
     # creat socket tream to the Nitro Enclave
     client = VsockStream()
