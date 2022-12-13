@@ -126,8 +126,8 @@ def prepare_server_request(ciphertext, enc_sk):
         'secret_access_key': response['SecretAccessKey'],
         'token': response['Token'],
         'region': REGION,
-        'ciphertext': ciphertext,
-        'enc_sk': enc_sk
+        'ciphertext': ciphertext.hex(),
+        'enc_sk': enc_sk.hex()
     }
 
     return credential
