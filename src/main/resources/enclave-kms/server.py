@@ -3,9 +3,16 @@
 import argparse
 import socket
 import sys
+import base64
 import json
 import urllib.request
+import subprocess
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
+KMS_PROXY_PORT="8000"
 
 class OrdinaryStream:
     # Client
@@ -56,8 +63,8 @@ class VsockListener:
                 (from_client, (remote_cid, remote_port)) = self.sock.accept()
                 print("Connection from " + str(from_client) + str(remote_cid) + str(remote_port))
 
-                query = from_client.recv(1024)
-                print("Message received from python client: " + query.hex())
+                query = from_client.recv(4096)
+                print("Message received from python client: " + query.decode())
 
                 # Call the external URL
                 # for our scenario we will download list of published ip ranges and return list of S3 ranges for porvided region.
@@ -71,9 +78,49 @@ class VsockListener:
             except Exception as ex:
                 print(ex)
 
-def decrypt_message(encrypted_message):
-    print("Python Enclave Received: " + encrypted_message.hex())
 
+def get_plaintext(credentials):
+    access = credentials['access_key_id']
+    secret = credentials['secret_access_key']
+    token = credentials['token']
+    ciphertext = credentials['ciphertext']
+    enc_sk = credentials['enc_sk']
+    region = credentials['region']
+    creds = decrypt_message(access, secret, token, ciphertext, enc_sk, region)
+    return creds
+
+def decrypt_message(access, secret, token, ciphertext, enc_sk, region):
+    print("Python Enclave Received: " + ciphertext)
+    proc = subprocess.Popen(
+        [
+            "/app/kmstool_enclave_cli",
+            "--region", region,
+            "--proxy-port", KMS_PROXY_PORT,
+            "--aws-access-key-id", access,
+            "--aws-secret-access-key", secret,
+            "--aws-session-token", token,
+            "--ciphertext", enc_sk,
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+
+    ret = proc.communicate()
+
+    if ret[0]:
+        b64text = proc.communicate()[0].decode()
+        sk = base64.b64decode(b64text)
+
+        pk = load_pem_private_key(sk, default_backend())
+        decrypted_message = pk.decrypt(bytes.fromhex(ciphertext), padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        ))
+
+        return decrypted_message.decode()
+    else:
+        return "KMS Error. Decryption Failed."
 
 
 def server_handler(args):
@@ -81,14 +128,14 @@ def server_handler(args):
     server = VsockListener()
     server.bind(args.port)
     print("Started listening to port : ", str(args.port))
-    (encrypted_message, vsock_client) = server.recv_data()
+    (request_decryption, vsock_client) = server.recv_data()
 
-    plain_text = decrypt_message(encrypted_message)
+    plain_text = get_plaintext(json.loads(request_decryption.decode()))
     print("Decrypted Message " + plain_text)
 
     ordinary_client = OrdinaryStream()
     ordinary_client.connect(args.serverPort)
-    server_response = ordinary_client.send_data(encrypted_message)
+    server_response = ordinary_client.send_data(plain_text)
     vsock_client.send(server_response.encode())
     vsock_client.close()
 

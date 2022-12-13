@@ -1,0 +1,21 @@
+FROM 364028570591.dkr.ecr.eu-central-1.amazonaws.com/ccc/vos:2022-10-26v1.1.4
+
+COPY target/sockets-1.0-SNAPSHOT.jar /opt/app/sock.jar
+COPY target/lib /opt/app/lib
+ENV HOME="/opt/app"
+EXPOSE 6666
+
+COPY target/classes/enclave-kms/server.py /opt/app/server.py
+COPY target/classes/enclave-kms/run.sh /opt/app/run.sh
+
+COPY target/classes/enclave-kms/requirements.txt /opt/app/requirements.txt
+
+RUN chmod +x /opt/app/run.sh
+
+RUN apt-get update -y
+RUN apt-get install -y iproute2 python3-pip
+RUN pip3 install -r /opt/app/requirements.txt
+
+CMD ["/opt/app/run.sh"]
+
+#ENTRYPOINT ["java","-cp","sock.jar:lib/*","com.idemia.keyless.socket.ServerStart"]
