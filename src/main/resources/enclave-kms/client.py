@@ -121,7 +121,7 @@ def encrypt_message(message):
 
     print("Public Key pem " + pem_public_key)
 
-    public_key = rsa.PublicKey.load_pkcs1(pem_public_key)
+    public_key = rsa.PublicKey.load_pkcs1(pem_public_key.encode())
     encrypted_message = rsa.encrypt(message.encode(), public_key)
     print("Encrypted: " + encrypted_message.hex())
 
