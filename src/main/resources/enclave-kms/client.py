@@ -117,7 +117,9 @@ def encrypt_message(message):
     print("Public Key " + public_key_blob.hex())
     print("Public Key base64 " + base64.b64encode(public_key_blob).decode())
 
-    public_key = rsa.PublicKey.load_pkcs1(public_key_blob)
+    pem_public_key = "-----BEGIN RSA PUBLIC KEY-----" + base64.b64encode(public_key_blob).decode() + "-----END RSA PUBLIC KEY-----"
+
+    public_key = rsa.PublicKey.load_pkcs1(pem_public_key)
     encrypted_message = rsa.encrypt(message.encode(), public_key)
     print("Encrypted: " + encrypted_message.hex())
 
