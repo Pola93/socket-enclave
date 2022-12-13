@@ -56,8 +56,8 @@ class VsockListener:
                 (from_client, (remote_cid, remote_port)) = self.sock.accept()
                 print("Connection from " + str(from_client) + str(remote_cid) + str(remote_port))
 
-                query = from_client.recv(1024).decode()
-                print("Message received from python client: " + query)
+                query = from_client.recv(1024)
+                print("Message received from python client: " + query.hex())
 
                 # Call the external URL
                 # for our scenario we will download list of published ip ranges and return list of S3 ranges for porvided region.
@@ -71,17 +71,24 @@ class VsockListener:
             except Exception as ex:
                 print(ex)
 
+def decrypt_message(encrypted_message):
+    print("Python Enclave Received: " + encrypted_message.hex())
+
+
 
 def server_handler(args):
     print("Python server_handler")
     server = VsockListener()
     server.bind(args.port)
     print("Started listening to port : ", str(args.port))
-    (message, vsock_client) = server.recv_data()
+    (encrypted_message, vsock_client) = server.recv_data()
+
+    plain_text = decrypt_message(encrypted_message)
+    print("Decrypted Message " + plain_text)
 
     ordinary_client = OrdinaryStream()
     ordinary_client.connect(args.serverPort)
-    server_response = ordinary_client.send_data(message)
+    server_response = ordinary_client.send_data(encrypted_message)
     vsock_client.send(server_response.encode())
     vsock_client.close()
 

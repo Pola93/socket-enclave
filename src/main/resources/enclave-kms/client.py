@@ -5,6 +5,7 @@
 import boto3
 import argparse
 import socket
+import json
 import sys
 import requests
 import base64
@@ -65,8 +66,8 @@ class VsockStream:
         # Send data to the remote endpoint
         print(str(self.sock))
         # encode data before sending
-        self.sock.send(data.encode())
-        print("Data Sent enclave server", data)
+        self.sock.send(data)
+        print("Data Sent enclave server: ", data.decode())
         # receiving responce back
         resp = self.sock.recv(1024).decode()  # receive response
         print("Received from enclave server: ", resp)  # show in terminal
@@ -105,6 +106,32 @@ def set_identity():
 
 REGION, ACCOUNT = set_identity()
 
+def prepare_server_request(ciphertext, enc_sk):
+    """
+    Get the AWS credential from EC2 instance metadata
+    """
+    r = requests.get(
+        "http://169.254.169.254/latest/meta-data/iam/security-credentials/")
+    instance_profile_name = r.text
+
+    r = requests.get(
+        "http://169.254.169.254/latest/meta-data/iam/security-credentials/%s" %
+        instance_profile_name)
+    response = r.json()
+
+    print(ciphertext)
+
+    credential = {
+        'access_key_id': response['AccessKeyId'],
+        'secret_access_key': response['SecretAccessKey'],
+        'token': response['Token'],
+        'region': REGION,
+        'ciphertext': ciphertext,
+        'enc_sk': enc_sk
+    }
+
+    return credential
+
 def encrypt_message(message):
     kms = boto3.client("kms", region_name=REGION)
     data_key_pair = kms.generate_data_key_pair_without_plaintext(
@@ -132,15 +159,19 @@ def encrypt_message(message):
 
     print("Encrypted: " + encrypted_message.hex())
 
+    return encrypted_message, private_key_blob
+
 
 def client_handler(args):
-    print("Start")
-    encrypt_message("tescik")
+    print("Start Python Client")
     server = OrdinarySockListener()
     server.bind(args.serverPort)
     print("Started ordinary listening to port : ", str(args.serverPort))
     (message, ordinary_client) = server.recv_data()
 
+    (encrypted_message, private_key_blob) = encrypt_message(message)
+    request_decryption = prepare_server_request(encrypted_message, private_key_blob)
+    print("request_decryption: " + json.dumps(request_decryption))
 
     # creat socket tream to the Nitro Enclave
     client = VsockStream()
@@ -148,7 +179,7 @@ def client_handler(args):
     print("Endpoint Arguments ", str(args.cid), str(args.port))
     client.connect(endpoint)
     # Send provided query and handle the response
-    enclave_response = client.send_data(message)
+    enclave_response = client.send_data(str.encode(json.dumps(request_decryption)))
     ordinary_client.send(enclave_response.encode())
     ordinary_client.close()
 
