@@ -90,7 +90,7 @@ def get_plaintext(credentials):
     return creds
 
 def decrypt_message(access, secret, token, ciphertext, enc_sk, region):
-    print("Python Enclave Received: " + ciphertext)
+    print("Python Enclave Received encrypted message: " + ciphertext)
     proc = subprocess.Popen(
         [
             "/app/kmstool_enclave_cli",
