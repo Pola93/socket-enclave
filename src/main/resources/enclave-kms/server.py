@@ -90,8 +90,8 @@ def get_plaintext(credentials):
     return creds
 
 def decrypt_message(access, secret, token, ciphertext, enc_sk, region):
-    print("Python Enclave Received encrypted message: " + ciphertext)
-    print("Python Enclave Received encrypted sk: " + enc_sk)
+    print("Python Enclave Received encrypted message: " + base64.b64decode(ciphertext.encode()).decode())
+    print("Python Enclave Received encrypted sk: " + base64.b64decode(enc_sk.encode()).decode())
     proc = subprocess.Popen(
         [
             "/opt/app/kmstool_enclave_cli",
@@ -100,7 +100,7 @@ def decrypt_message(access, secret, token, ciphertext, enc_sk, region):
             "--aws-access-key-id", access,
             "--aws-secret-access-key", secret,
             "--aws-session-token", token,
-            "--ciphertext", enc_sk.encode(),
+            "--ciphertext", base64.b64decode(enc_sk.encode()).decode(),
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
@@ -111,7 +111,7 @@ def decrypt_message(access, secret, token, ciphertext, enc_sk, region):
     if ret[0]:
         b64text = proc.communicate()[0].decode()
         sk = base64.b64decode(b64text)
-
+        print("SK: ===============> " + sk.decode())
         pk = load_pem_private_key(sk, default_backend())
         decrypted_message = pk.decrypt(bytes.fromhex(ciphertext), padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),

@@ -119,15 +119,13 @@ def prepare_server_request(ciphertext, enc_sk):
         instance_profile_name)
     response = r.json()
 
-    print(ciphertext)
-
     credential = {
         'access_key_id': response['AccessKeyId'],
         'secret_access_key': response['SecretAccessKey'],
         'token': response['Token'],
         'region': REGION,
-        'ciphertext': ciphertext.decode("ascii"),
-        'enc_sk': enc_sk.decode("ascii")
+        'ciphertext': base64.b64encode(ciphertext).decode(),
+        'enc_sk': base64.b64encode(enc_sk).decode()
     }
 
     return credential
@@ -157,7 +155,7 @@ def encrypt_message(message):
     ))
     print("Public Key pem " + pem_public_key)
 
-    print("Encrypted: " + encrypted_message.decode("ascii"))
+    print("Encrypted: " + base64.b64encode(encrypted_message).decode())
 
     return encrypted_message, private_key_blob
 
