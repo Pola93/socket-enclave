@@ -63,7 +63,7 @@ class VsockListener:
                 (from_client, (remote_cid, remote_port)) = self.sock.accept()
                 print("Connection from " + str(from_client) + str(remote_cid) + str(remote_port))
 
-                query = from_client.recv(4096)
+                query = from_client.recv(8192)
                 print("Message received from python client: " + query.decode())
 
                 # Call the external URL
