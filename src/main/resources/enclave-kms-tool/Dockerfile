@@ -74,6 +74,6 @@ RUN cmake3 --build aws-nitro-enclaves-sdk-c/build --target docs
 
 # Create a workshop base image with libnsm.so and kmstool_enclave_cli
 FROM public.ecr.aws/amazonlinux/amazonlinux:2 as enclave_base
-WORKDIR /app
-COPY --from=builder /usr/lib64/libnsm.so /usr/lib64/libnsm.so /app/
-COPY --from=builder /usr/bin/kmstool_enclave_cli /app/
+WORKDIR /opt/app
+COPY --from=builder /usr/lib64/libnsm.so /usr/lib64/libnsm.so /opt/app/
+COPY --from=builder /usr/bin/kmstool_enclave_cli /opt/app/

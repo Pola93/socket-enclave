@@ -91,15 +91,16 @@ def get_plaintext(credentials):
 
 def decrypt_message(access, secret, token, ciphertext, enc_sk, region):
     print("Python Enclave Received encrypted message: " + ciphertext)
+    print("Python Enclave Received encrypted sk: " + enc_sk)
     proc = subprocess.Popen(
         [
-            "/app/kmstool_enclave_cli",
+            "/opt/app/kmstool_enclave_cli",
             "--region", region,
             "--proxy-port", KMS_PROXY_PORT,
             "--aws-access-key-id", access,
             "--aws-secret-access-key", secret,
             "--aws-session-token", token,
-            "--ciphertext", enc_sk,
+            "--ciphertext", enc_sk.encode(),
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
@@ -120,7 +121,7 @@ def decrypt_message(access, secret, token, ciphertext, enc_sk, region):
 
         return decrypted_message.decode()
     else:
-        return "KMS Error. Decryption Failed."
+        return "KMS Error. Decryption Failed. ->" + ret[1].decode()
 
 
 def server_handler(args):
@@ -133,10 +134,10 @@ def server_handler(args):
     plain_text = get_plaintext(json.loads(request_decryption.decode()))
     print("Decrypted Message " + plain_text)
 
-    ordinary_client = OrdinaryStream()
-    ordinary_client.connect(args.serverPort)
-    server_response = ordinary_client.send_data(plain_text)
-    vsock_client.send(server_response.encode())
+    # ordinary_client = OrdinaryStream()
+    # ordinary_client.connect(args.serverPort)
+    # server_response = ordinary_client.send_data(plain_text)
+    vsock_client.send(plain_text.encode())
     vsock_client.close()
 
 

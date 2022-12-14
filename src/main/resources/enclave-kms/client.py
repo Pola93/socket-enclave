@@ -126,8 +126,8 @@ def prepare_server_request(ciphertext, enc_sk):
         'secret_access_key': response['SecretAccessKey'],
         'token': response['Token'],
         'region': REGION,
-        'ciphertext': ciphertext.hex(),
-        'enc_sk': enc_sk.hex()
+        'ciphertext': ciphertext.decode(),
+        'enc_sk': enc_sk.decode()
     }
 
     return credential
@@ -157,7 +157,7 @@ def encrypt_message(message):
     ))
     print("Public Key pem " + pem_public_key)
 
-    print("Encrypted: " + encrypted_message.hex())
+    print("Encrypted: " + encrypted_message.decode())
 
     return encrypted_message, private_key_blob
 
