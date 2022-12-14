@@ -157,7 +157,7 @@ def encrypt_message(message):
     ))
     print("Public Key pem " + pem_public_key)
 
-    print("Encrypted: " + encrypted_message.decode())
+    print("Encrypted: " + encrypted_message.decode("ascii"))
 
     return encrypted_message, private_key_blob
 
