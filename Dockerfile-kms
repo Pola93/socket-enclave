@@ -7,6 +7,7 @@ ENV HOME="/opt/app"
 EXPOSE 6666
 
 COPY target/classes/enclave-kms/server.py /opt/app/server.py
+COPY target/classes/enclave-kms/traffic_forwarder.py /opt/app/traffic_forwarder.py
 COPY target/classes/enclave-kms/run.sh /opt/app/run.sh
 
 COPY target/classes/enclave-kms/requirements.txt /opt/app/requirements.txt
@@ -14,7 +15,7 @@ COPY target/classes/enclave-kms/requirements.txt /opt/app/requirements.txt
 RUN chmod +x /opt/app/run.sh
 
 RUN yum upgrade -y
-RUN yum install -y iproute2 python3-pip
+RUN yum install -y iproute python3-pip
 RUN pip3 install -r /opt/app/requirements.txt
 
 CMD ["/opt/app/run.sh"]
