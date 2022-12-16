@@ -114,7 +114,7 @@ def decrypt_message(access, secret, token, ciphertext, enc_sk, region):
 
         pem_private_key = "-----BEGIN PRIVATE KEY-----\n" + base64.b64encode(sk_binary).decode() + "\n-----END PRIVATE KEY-----"
         print("SK: ===============> " + pem_private_key)
-        sk = load_pem_private_key(pem_private_key.encode("ascii"), default_backend())
+        sk = load_pem_private_key(pem_private_key.encode("ascii"), None, default_backend())
         decrypted_message = sk.decrypt(bytes.fromhex(ciphertext), padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
             algorithm=hashes.SHA256(),
