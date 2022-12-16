@@ -140,7 +140,7 @@ def encrypt_message(message):
     public_key_blob = data_key_pair["PublicKey"]
 
     print("message plain " + message)
-    print("Private Key " + str(private_key_blob, 'utf-8'))
+    print("Private Key " + base64.b64encode(private_key_blob).decode())
     print("Public Key " + public_key_blob.hex())
     print("Public Key base64 " + base64.b64encode(public_key_blob).decode())
 
