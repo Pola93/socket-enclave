@@ -141,7 +141,7 @@ def encrypt_message(message):
 
     try:
         decrypted_private_key = kms.decrypt(CiphertextBlob=private_key_blob)
-        print("decrypted_private_key " + decrypted_private_key)
+        print("decrypted_private_key " + decrypted_private_key["Plaintext"].hex())
     except Exception as e:
         print("Caught error while decrypting in parent: ")
         print(e)
