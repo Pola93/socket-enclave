@@ -110,10 +110,12 @@ def decrypt_message(access, secret, token, ciphertext, enc_sk, region):
 
     if ret[0]:
         b64text = proc.communicate()[0].decode()
-        sk = base64.b64decode(b64text)
-        print("SK: ===============> " + sk.decode())
-        pk = load_pem_private_key(sk, default_backend())
-        decrypted_message = pk.decrypt(bytes.fromhex(ciphertext), padding.OAEP(
+        sk_binary = base64.b64decode(b64text)
+
+        pem_private_key = "-----BEGIN PRIVATE KEY-----\n" + base64.b64encode(sk_binary).decode() + "\n-----END PRIVATE KEY-----"
+        print("SK: ===============> " + pem_private_key)
+        sk = load_pem_private_key(pem_private_key.encode("ascii"), default_backend())
+        decrypted_message = sk.decrypt(bytes.fromhex(ciphertext), padding.OAEP(
             mgf=padding.MGF1(algorithm=hashes.SHA256()),
             algorithm=hashes.SHA256(),
             label=None

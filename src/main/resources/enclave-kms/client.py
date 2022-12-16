@@ -124,7 +124,7 @@ def prepare_server_request(ciphertext, enc_sk):
         'secret_access_key': response['SecretAccessKey'],
         'token': response['Token'],
         'region': REGION,
-        'ciphertext': base64.b64encode(ciphertext).decode(),
+        'ciphertext': ciphertext.hex(),
         'enc_sk': base64.b64encode(enc_sk).decode()
     }
 
