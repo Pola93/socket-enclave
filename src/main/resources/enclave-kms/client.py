@@ -140,7 +140,7 @@ def encrypt_message(message):
     public_key_blob = data_key_pair["PublicKey"]
 
     try:
-        decrypted_private_key = kms.decrypt(CiphertextBlob=base64.b64encode(private_key_blob))
+        decrypted_private_key = kms.decrypt(CiphertextBlob=private_key_blob)
         print("decrypted_private_key " + decrypted_private_key)
     except Exception as e:
         print("Caught error while decrypting in parent: ")
